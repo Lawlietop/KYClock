@@ -53,7 +53,7 @@ class ClockView: UIView {
     var angle:CGFloat = 0.0
     var angleDecide : CGFloat?
     var circleCount:Double = 0
-    
+    var canTouch:Bool = true
     
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -63,7 +63,6 @@ class ClockView: UIView {
     }
     
     private func setUp(){
-        
         if let l = lastFrame where l == self.frame{
             return
         }
@@ -104,33 +103,33 @@ class ClockView: UIView {
             
         }
         
-        //-----------------------------------------------Mark:Components & HandsXY--------------------------------------------------
+        self.resetHands()
         
+        lastFrame = self.frame
         
-        let calendar = NSCalendar.currentCalendar()
-        let currentDate = NSDate()
-        let dateComponents = calendar.components([.Hour,.Minute,.Second], fromDate: currentDate)
+    }
+    
+    func resetHands() {
         
-        print("\(dateComponents.hour):\(dateComponents.minute):\(dateComponents.second)")
+        let date = self.getTimeComponent()
+        
+        print("\(date.hour):\(date.minute):\(date.second)")
         
         let midX = CGRectGetMidX(self.bounds)
         let midY = CGRectGetMidY(self.bounds)
         
         let frame = self.frame
         
-        let secondsArc = 2*M_PI*(Double(dateComponents.second)/60.0-1/4)
-        minutesArc = 2*M_PI*((Double(dateComponents.minute)/60) + (Double(dateComponents.second)/60)/60)
-        hoursArc = 2*M_PI*((Double(dateComponents.hour)/12) + (Double(dateComponents.minute)/60)/12)
+        let secondsArc = 2*M_PI*(Double(date.second)/60.0-1/4)
+        minutesArc = 2*M_PI*((Double(date.minute)/60) + (Double(date.second)/60)/60)
+        hoursArc = 2*M_PI*((Double(date.hour)/12) + (Double(date.minute)/60)/12)
         
         
-        let secondsX = CGFloat(Double(max(frame.height,frame.width)/5.0)*cos(secondsArc))
-        let secondsY = CGFloat(Double(max(frame.height,frame.width)/5.0)*sin(secondsArc))
+        let secondsX = CGFloat(Double(max(frame.height,frame.width)/3.3)*cos(secondsArc))
+        let secondsY = CGFloat(Double(max(frame.height,frame.width)/3.3)*sin(secondsArc))
         
-        let minutesY = CGFloat(Double(max(frame.height,frame.width)/6.0))
-        
-        let hoursY = CGFloat(Double(max(frame.height,frame.width)/10))
-        
-        
+        let minutesY = CGFloat(Double(max(frame.height,frame.width)/4.0))
+        let hoursY = CGFloat(Double(max(frame.height,frame.width)/7.0))
         
         
         
@@ -142,15 +141,11 @@ class ClockView: UIView {
         hoursPath.addLineToPoint(CGPointMake(CGFloat(midX), CGFloat(midY+hoursY/3)))
         hoursLayer.path = hoursPath.CGPath
         hoursLayer.transform = CATransform3DMakeRotation(CGFloat(hoursArc), 0.0, 0.0, 1.0)
-//        hoursLayer.backgroundColor = UIColor.blueColor().CGColor
-        
         self.layer.addSublayer(hoursLayer)
         self.hoursHandAnimation()
         
         
-        
         //----------------------------------------------------Mark:minutesHand--------------------------------------------------------
-        
         
         
         let minutesPath = UIBezierPath()
@@ -158,11 +153,8 @@ class ClockView: UIView {
         minutesPath.addLineToPoint(CGPointMake(CGFloat(midX), CGFloat(midY+minutesY/3)))
         minutesLayer.path = minutesPath.CGPath
         minutesLayer.transform = CATransform3DMakeRotation(CGFloat(minutesArc), 0.0, 0.0, 1.0)
-        minutesLayer.backgroundColor = UIColor.yellowColor().CGColor
-        
         self.layer.addSublayer(minutesLayer)
         self.minutesHandAnimation()
-        
         
         
         //---------------------------------------------------Mark:secondsHand---------------------------------------------------------
@@ -174,7 +166,6 @@ class ClockView: UIView {
         secondsLayer.path = secondsPath.CGPath
         self.layer.addSublayer(secondsLayer)
         secondsLayer.frame = self.bounds
-
         
         
         let secondsanimation = CABasicAnimation(keyPath: "transform.rotation.z")
@@ -183,16 +174,7 @@ class ClockView: UIView {
         secondsanimation.fromValue = 0.0
         secondsanimation.toValue = 2*M_PI
         secondsLayer.addAnimation(secondsanimation, forKey: "secondsRotation")
-        
-        
-        
-
-        
-        
-        lastFrame = self.frame
-        
     }
-    
     
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
@@ -201,8 +183,8 @@ class ClockView: UIView {
         let dx = (locationPoint?.x)! - minutesLayer.position.x
         let dy = (locationPoint?.y)! - minutesLayer.position.y
         deltaAngle = atan2(dx, dy)
-        
-        
+        minutesLayer.transform = CATransform3DMakeRotation(-deltaAngle+CGFloat(M_PI), 0.0, 0.0, 1.0)
+        startMinutesTransform = minutesLayer.transform
     }
     
     
@@ -213,25 +195,19 @@ class ClockView: UIView {
         let movePoint = (touches as NSSet).anyObject()?.locationInView(self)
         let dx = (movePoint?.x)! - minutesLayer.position.x
         let dy = (movePoint?.y)! - minutesLayer.position.y
-        let ang = atan2(dx, dy)
-        let angleDifference = deltaAngle - ang
+        
         let previousLocation = (touches as NSSet).anyObject()?.previousLocationInView(self)
         let preDx = (previousLocation?.x)! - minutesLayer.position.x
         let preDy = (previousLocation?.y)! - minutesLayer.position.y
-        var angleCorrection :CGFloat!
-
         
-        if startMinutesTransform == nil{
-            
-            minutesLayer.transform = CATransform3DMakeRotation(angleDifference, 0.0, 0.0, 1.0)
-            startMinutesTransform = minutesLayer.transform
-            
-        }
+        let ang = atan2(dx, dy)
+        let angleDifference = deltaAngle - ang
+        var angleCorrection :CGFloat!
+        let angle = atan2(minutesLayer.transform.m12, minutesLayer.transform.m11)
         
         
         minutesLayer.transform = CATransform3DRotate(startMinutesTransform!, angleDifference, 0.0, 0.0, 1.0)
-    
-        let angle = atan2(minutesLayer.transform.m12, minutesLayer.transform.m11)
+        
         
         
         if (dy>0 && preDx*dx<=0 && dx-preDx<0 && preDx != 0 && preDy>0){
@@ -253,7 +229,7 @@ class ClockView: UIView {
         
         let circleAngle = angleCorrection + CGFloat(hoursArc) + CGFloat(circleCount*2*M_PI/12)
         hoursLayer.transform = CATransform3DMakeRotation(circleAngle, 0.0, 0.0, 1.0)
-
+        
         
         minutesLayer.removeAnimationForKey("minutesRotation")
         hoursLayer.removeAnimationForKey("hoursRotation")
@@ -262,15 +238,13 @@ class ClockView: UIView {
     
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
         print("end")
-
-        startMinutesTransform = nil
         
         self.minutesHandAnimation()
         self.hoursHandAnimation()
     }
     
     
-    func minutesHandAnimation() {
+    private func minutesHandAnimation() {
         
         minutesAnimation = CABasicAnimation(keyPath: "transform.rotation.z")
         minutesAnimation.duration = 3600.0
@@ -280,7 +254,7 @@ class ClockView: UIView {
         
     }
     
-    func hoursHandAnimation() {
+    private func hoursHandAnimation() {
         
         hoursAnimation = CABasicAnimation(keyPath: "transform.rotation.z")
         hoursAnimation.duration = 43200.0
@@ -288,6 +262,25 @@ class ClockView: UIView {
         hoursAnimation.byValue = 2*M_PI
         hoursLayer.addAnimation(hoursAnimation, forKey: "hoursRotation")
         
+        
     }
+    
+    func getTimeComponent() -> NSDateComponents{
+        let calendar = NSCalendar.currentCalendar()
+        let currentDate = NSDate()
+        let dateComponents = calendar.components([.Hour,.Minute,.Second], fromDate: currentDate)
+        return dateComponents
+    }
+    
+    
+    
+    
+    override func hitTest(point: CGPoint, withEvent event: UIEvent?) -> UIView? {
+        if (canTouch == true) {
+            return self
+        }
+        return nil
+    }
+    
     
 }
