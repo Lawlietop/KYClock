@@ -15,6 +15,7 @@
 		9A7C1AF31D4A08B200A07D09 /* KYClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7C1AF21D4A08B200A07D09 /* KYClockTests.swift */; };
 		9A7C1AFE1D4A08B200A07D09 /* KYClockUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7C1AFD1D4A08B200A07D09 /* KYClockUITests.swift */; };
 		9A7C1B0C1D4A0D4D00A07D09 /* ClockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7C1B0B1D4A0D4D00A07D09 /* ClockView.swift */; };
+		9AD5796E1D8839130045F0A5 /* HandsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD5796D1D8839130045F0A5 /* HandsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		9A7C1AFD1D4A08B200A07D09 /* KYClockUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KYClockUITests.swift; sourceTree = "<group>"; };
 		9A7C1AFF1D4A08B200A07D09 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9A7C1B0B1D4A0D4D00A07D09 /* ClockView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClockView.swift; sourceTree = "<group>"; };
+		9AD5796D1D8839130045F0A5 /* HandsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HandsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +103,7 @@
 			children = (
 				9A7C1ADD1D4A08B200A07D09 /* AppDelegate.swift */,
 				9A7C1ADF1D4A08B200A07D09 /* ViewController.swift */,
+				9AD5796D1D8839130045F0A5 /* HandsView.swift */,
 				9A7C1B0B1D4A0D4D00A07D09 /* ClockView.swift */,
 				9A7C1AE11D4A08B200A07D09 /* Main.storyboard */,
 				9A7C1AE41D4A08B200A07D09 /* Assets.xcassets */,
@@ -263,6 +266,7 @@
 				9A7C1AE01D4A08B200A07D09 /* ViewController.swift in Sources */,
 				9A7C1B0C1D4A0D4D00A07D09 /* ClockView.swift in Sources */,
 				9A7C1ADE1D4A08B200A07D09 /* AppDelegate.swift in Sources */,
+				9AD5796E1D8839130045F0A5 /* HandsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
