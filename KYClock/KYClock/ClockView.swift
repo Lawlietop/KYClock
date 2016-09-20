@@ -11,46 +11,46 @@ import UIKit
 class ClockView: UIView {
     
     var lastFrame:CGRect!
-    private lazy var ticklayer  = CAShapeLayer()
-    private lazy var graduationLayer = CAShapeLayer()
+    fileprivate lazy var ticklayer  = CAShapeLayer()
+    fileprivate lazy var graduationLayer = CAShapeLayer()
     
     
-    private lazy var secondsLayer : CAShapeLayer={
+    fileprivate lazy var secondsLayer : CAShapeLayer={
         let layer = CAShapeLayer()
         layer.frame = self.bounds
         layer.lineWidth = 2
-        layer.strokeColor = UIColor.redColor().CGColor
-        layer.anchorPoint = CGPointMake(0.5,0.5)
+        layer.strokeColor = UIColor.red.cgColor
+        layer.anchorPoint = CGPoint(x: 0.5,y: 0.5)
         return layer
     }()
     
-    private lazy var hoursLayer : CAShapeLayer={
-        let layer = CAShapeLayer()
-        layer.frame = self.bounds
-        layer.lineWidth = 8
-        layer.strokeColor = UIColor.blackColor().CGColor
-        layer.anchorPoint = CGPointMake(0.5,0.5)
-        return layer
+    fileprivate lazy var hoursView : HandsView={
+        let view = HandsView(frame: self.bounds)
+        view.botLength = 25
+        view.topLength = 70
+        view.handsWidth = 8
+        return view
     }()
     
-    private lazy var minutesView:HandsView={
+    fileprivate lazy var minutesView:HandsView={
         var view = HandsView(frame: self.bounds)
         view.botLength = 35
         view.topLength = 110
         view.handsWidth = 5
         return view
     }()
+
     
-    
-    
-    private var deltaAngle = CGFloat()
-    private var startMinutesTransform : CGAffineTransform?
+    fileprivate var deltaAngle = CGFloat()
+    fileprivate var startMinutesTransform : CGAffineTransform?
+
+
     var oldMinutes : CGFloat?
     var minutesAnimation = CABasicAnimation()
     var hoursAnimation = CABasicAnimation()
-    var minutesArc:Double = 0.0
-    var hoursArc:Double = 0.0
-    var angle:CGFloat = 0.0
+    var minutesArc:Double!
+    var hoursArc:Double!
+    var angle:CGFloat!
     var angleDecide : CGFloat?
     var circleCount:Double = 0
     var canTouch:Bool = true
@@ -62,8 +62,8 @@ class ClockView: UIView {
         
     }
     
-    private func setUp(){
-        if let l = lastFrame where l == self.frame{
+    fileprivate func setUp(){
+        if let l = lastFrame , l == self.frame{
             return
         }
         
@@ -79,25 +79,25 @@ class ClockView: UIView {
             
             
             if tick % 5 == 0 {
-                let x = CGFloat(CGRectGetMidX(self.bounds)+CGFloat(Double(min(frame.width, frame.height)/3.0-10)*cos(2*M_PI/Double(count)*Double(tick))))
-                let y = CGFloat(CGRectGetMidY(self.bounds)-CGFloat(Double(min(frame.width, frame.height)/3.0-10)*sin(2*M_PI/Double(count)*Double(tick))))
+                let x = CGFloat(self.bounds.midX+CGFloat(Double(min(frame.width, frame.height)/3.0-10)*cos(2*M_PI/Double(count)*Double(tick))))
+                let y = CGFloat(self.bounds.midY-CGFloat(Double(min(frame.width, frame.height)/3.0-10)*sin(2*M_PI/Double(count)*Double(tick))))
                 let len = 40.0
                 graduationLayer.lineWidth = 3.0
-                graduationLayer.strokeColor = UIColor.blackColor().CGColor
-                path2.moveToPoint(CGPointMake(x, y))
-                path2.addLineToPoint(CGPointMake(x+CGFloat(len*cos(2*M_PI/Double(count)*Double(tick))), y-CGFloat(len*sin(2*M_PI/Double(count)*Double(tick)))))
-                graduationLayer.path = path2.CGPath
+                graduationLayer.strokeColor = UIColor.black.cgColor
+                path2.move(to: CGPoint(x: x, y: y))
+                path2.addLine(to: CGPoint(x: x+CGFloat(len*cos(2*M_PI/Double(count)*Double(tick))), y: y-CGFloat(len*sin(2*M_PI/Double(count)*Double(tick)))))
+                graduationLayer.path = path2.cgPath
                 self.layer.addSublayer(graduationLayer)
                 
             } else {
-                let x = CGFloat(CGRectGetMidX(self.bounds)+CGFloat(Double(min(frame.width, frame.height)/3.0)*cos(2*M_PI/Double(count)*Double(tick))))
-                let y = CGFloat(CGRectGetMidY(self.bounds)-CGFloat(Double(min(frame.width, frame.height)/3.0)*sin(2*M_PI/Double(count)*Double(tick))))
+                let x = CGFloat(self.bounds.midX+CGFloat(Double(min(frame.width, frame.height)/3.0)*cos(2*M_PI/Double(count)*Double(tick))))
+                let y = CGFloat(self.bounds.midY-CGFloat(Double(min(frame.width, frame.height)/3.0)*sin(2*M_PI/Double(count)*Double(tick))))
                 let len = 30.0
                 ticklayer.lineWidth = 1.0
-                ticklayer.strokeColor = UIColor.blackColor().CGColor
-                path.moveToPoint(CGPointMake(x, y))
-                path.addLineToPoint(CGPointMake(x+CGFloat(len*cos(2*M_PI/Double(count)*Double(tick))), y-CGFloat(len*sin(2*M_PI/Double(count)*Double(tick)))))
-                ticklayer.path = path.CGPath
+                ticklayer.strokeColor = UIColor.black.cgColor
+                path.move(to: CGPoint(x: x, y: y))
+                path.addLine(to: CGPoint(x: x+CGFloat(len*cos(2*M_PI/Double(count)*Double(tick))), y: y-CGFloat(len*sin(2*M_PI/Double(count)*Double(tick)))))
+                ticklayer.path = path.cgPath
                 self.layer.addSublayer(ticklayer)
             }
             
@@ -115,49 +115,40 @@ class ClockView: UIView {
         
         print("\(date.hour):\(date.minute):\(date.second)")
         
-        let midX = CGRectGetMidX(self.bounds)
-        let midY = CGRectGetMidY(self.bounds)
+        let midX = self.bounds.midX
+        let midY = self.bounds.midY
         
         let frame = self.frame
         
-        let secondsArc = 2*M_PI*(Double(date.second)/60.0-1/4)
-        minutesArc = 2*M_PI*((Double(date.minute)/60) + (Double(date.second)/60)/60)
-        hoursArc = 2*M_PI*((Double(date.hour)/12) + (Double(date.minute)/60)/12)
+        let secondsArc = 2*M_PI*(Double(date.second!)/60.0-1/4)
+        minutesArc = 2*M_PI*((Double(date.minute!)/60) + (Double(date.second!)/60)/60)
+        hoursArc = 2*M_PI*((Double(date.hour!)/12) + (Double(date.minute!)/60)/12)
         
         
         let secondsX = CGFloat(Double(max(frame.height,frame.width)/3.3)*cos(secondsArc))
         let secondsY = CGFloat(Double(max(frame.height,frame.width)/3.3)*sin(secondsArc))
         
-        //        let minutesY = CGFloat(Double(max(frame.height,frame.width)/4.0))
-        let hoursY = CGFloat(Double(max(frame.height,frame.width)/7.0))
-        
+//        let minutesY = CGFloat(Double(max(frame.height,frame.width)/4.0))
+//        let hoursY = CGFloat(Double(max(frame.height,frame.width)/7.0))
         
         
         //-----------------------------------------------------Mark:hoursHand---------------------------------------------------------
         
-        
-        let hoursPath = UIBezierPath()
-        hoursPath.moveToPoint(CGPointMake(CGFloat(midX), CGFloat(midY-hoursY)))
-        hoursPath.addLineToPoint(CGPointMake(CGFloat(midX), CGFloat(midY+hoursY/3)))
-        hoursLayer.path = hoursPath.CGPath
-        hoursLayer.transform = CATransform3DMakeRotation(CGFloat(hoursArc), 0.0, 0.0, 1.0)
-        self.layer.addSublayer(hoursLayer)
-        self.hoursHandAnimation()
-        
+        hoursView.transform = CGAffineTransform(rotationAngle: CGFloat(hoursArc))
+        self.addSubview(hoursView)
         
         //----------------------------------------------------Mark:minutesHand--------------------------------------------------------
         
-        minutesView.transform = CGAffineTransformMakeRotation(CGFloat(minutesArc))
+        minutesView.transform = CGAffineTransform(rotationAngle: CGFloat(minutesArc))
         self.addSubview(minutesView)
         
-        
-        //---------------------------------------------------Mark:secondsHand---------------------------------------------------------
+        //----------------------------------------------------Mark:secondsHand---------------------------------------------------------
         
         
         let secondsPath = UIBezierPath()
-        secondsPath.moveToPoint(CGPointMake(CGFloat(midX-secondsX/3), CGFloat(midY-secondsY/3)))
-        secondsPath.addLineToPoint(CGPointMake(CGFloat(midX+secondsX), CGFloat(midY+secondsY)))
-        secondsLayer.path = secondsPath.CGPath
+        secondsPath.move(to: CGPoint(x: CGFloat(midX-secondsX/3), y: CGFloat(midY-secondsY/3)))
+        secondsPath.addLine(to: CGPoint(x: CGFloat(midX+secondsX), y: CGFloat(midY+secondsY)))
+        secondsLayer.path = secondsPath.cgPath
         self.layer.addSublayer(secondsLayer)
         secondsLayer.frame = self.bounds
         
@@ -167,41 +158,39 @@ class ClockView: UIView {
         secondsanimation.repeatCount = .infinity
         secondsanimation.fromValue = 0.0
         secondsanimation.toValue = 2*M_PI
-        secondsLayer.addAnimation(secondsanimation, forKey: "secondsRotation")
+        secondsLayer.add(secondsanimation, forKey: "secondsRotation")
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        if let touch = touches.first{
+            let locationPoint = touch.location(in: self)
+            let dx = (locationPoint.x) - minutesView.center.x
+            let dy = (locationPoint.y) - minutesView.center.y
+            deltaAngle = atan2(dx, dy)
+            minutesView.transform = CGAffineTransform(rotationAngle: -deltaAngle+CGFloat(M_PI))
+            startMinutesTransform = minutesView.transform
+        }
+
     }
     
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         
-        let locationPoint = (touches as NSSet).anyObject()?.locationInView(self)
-        let dx = (locationPoint?.x)! - minutesView.center.x
-        let dy = (locationPoint?.y)! - minutesView.center.y
-        deltaAngle = atan2(dx, dy)
-        minutesView.transform = CGAffineTransformMakeRotation(-deltaAngle+CGFloat(M_PI))
-        startMinutesTransform = minutesView.transform
-    }
-    
-    
-    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        let movePoint = touches.first!.location(in: self)
+        let dx = (movePoint.x) - minutesView.center.x
+        let dy = (movePoint.y) - minutesView.center.y
         
-        
-        
-        let movePoint = (touches as NSSet).anyObject()?.locationInView(self)
-        let dx = (movePoint?.x)! - minutesView.center.x
-        let dy = (movePoint?.y)! - minutesView.center.y
-        
-        let previousLocation = (touches as NSSet).anyObject()?.previousLocationInView(self)
-        let preDx = (previousLocation?.x)! - minutesView.center.x
-        let preDy = (previousLocation?.y)! - minutesView.center.y
+        let previousLocation = touches.first!.previousLocation(in: self)
+        let preDx = (previousLocation.x) - minutesView.center.x
+        let preDy = (previousLocation.y) - minutesView.center.y
         
         let ang = atan2(dx, dy)
         let angleDifference = deltaAngle - ang
-        var angleCorrection :CGFloat!
+
         let angle = atan2(minutesView.transform.b, minutesView.transform.a)
         
-        
-        
-        minutesView.transform = CGAffineTransformRotate(startMinutesTransform!, angleDifference)
+        minutesView.transform = startMinutesTransform!.rotated(by: angleDifference)
         
         
         if (dy>0 && preDx*dx<=0 && dx-preDx<0 && preDx != 0 && preDy>0){
@@ -210,58 +199,31 @@ class ClockView: UIView {
             circleCount -= 1
         }
         
-        if angleDecide == nil {
-            angleDecide = angle
-        }
+        angleDecide = (angleDecide == nil) ? angle : angleDecide
         
+        let angleCorrection = (angle-CGFloat(minutesArc))/12
         
-        if angleDecide>0 {
-            angleCorrection = (angle-CGFloat(minutesArc))/12
-        } else if angleDecide<0{
-            angleCorrection = (angle+(CGFloat(2*M_PI))-CGFloat(minutesArc))/12
-        }
+        let circleAngle = CGFloat(circleCount*2*M_PI/12)+CGFloat(hoursArc)+CGFloat(angleCorrection)
         
-        let circleAngle = angleCorrection + CGFloat(hoursArc) + CGFloat(circleCount*2*M_PI/12)
-        hoursLayer.transform = CATransform3DMakeRotation(circleAngle, 0.0, 0.0, 1.0)
-        
-        
-        hoursLayer.removeAnimationForKey("hoursRotation")
+        hoursView.transform = CGAffineTransform(rotationAngle: circleAngle)
         
     }
     
-    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        print("end")
-        
-        self.hoursHandAnimation()
-    }
     
-    
-    
-    private func hoursHandAnimation() {
-        
-        hoursAnimation = CABasicAnimation(keyPath: "transform.rotation.z")
-        hoursAnimation.duration = 43200.0
-        hoursAnimation.repeatCount = .infinity
-        hoursAnimation.byValue = 2*M_PI
-        hoursLayer.addAnimation(hoursAnimation, forKey: "hoursRotation")
-        
-        
-    }
-    
-    func getTimeComponent() -> NSDateComponents{
-        let calendar = NSCalendar.currentCalendar()
-        let currentDate = NSDate()
-        let dateComponents = calendar.components([.Hour,.Minute,.Second], fromDate: currentDate)
+    func getTimeComponent() -> DateComponents{
+        let calendar = Calendar.current
+        let currentDate = Date()
+        let dateComponents = (calendar as NSCalendar).components([.hour,.minute,.second], from: currentDate)
         return dateComponents
     }
-    
-    
-    override func hitTest(point: CGPoint, withEvent event: UIEvent?) -> UIView? {
+
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         if (canTouch == true) {
             return self
         }
         return nil
     }
-    
-    
 }
+    
+    
+

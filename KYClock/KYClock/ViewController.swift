@@ -21,14 +21,14 @@ class ViewController: UIViewController {
     }
     
     
-    @IBAction func switchBtnAction(sender: AnyObject) {
-        if switchBtn.on {
+    @IBAction func switchBtnAction(_ sender: AnyObject) {
+        if switchBtn.isOn {
             clockView.canTouch = true
         }else{
             clockView.canTouch = false
         }
     }
-    @IBAction func resetClock(sender: AnyObject) {
+    @IBAction func resetClock(_ sender: AnyObject) {
         clockView.resetHands()
     }
     
